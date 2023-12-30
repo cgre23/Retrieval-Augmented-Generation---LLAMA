@@ -16,18 +16,23 @@ The aim is to gain a quick overview of the diverse possible uses of Llama-2. For
 
 ## Instructions
 
-1. Activate the virtual environment
+1. Make sure that you place the OPENAI_API_KEY in the .env file in this folder. Use this format: OPENAI_API_KEY=xxx. Access the file as follows:
+        
+        nano .env
+
+
+2. Activate the virtual environment
 
         . venv/bin/activate
 
 
-2. Run the python script
+3. Run the python script
 
 
         python main.py
     
 
-3. Wait until the script asks for a prompt. Enter your prompt and you will get a response. You will be repeatedly asked for another prompt; to quit press Enter on an empty prompt.
+4. Wait until the script asks for a prompt. Enter your prompt and you will get a response. You will be repeatedly asked for another prompt; to quit press Enter on an empty prompt.
 
 
 ## Examples

@@ -15,7 +15,7 @@ from langchain.document_loaders import TextLoader, JSONLoader
 from pathlib import Path
 import json
 import logging
-fmt='json' # Choose 'txt' or 'json' format
+fmt='json' # Choose 'txt' or 'json' format. The JSON format creates a document for every publication. The TXT format creates one long document.
 # Make sure that you place the OPENAI_API_KEY in the .env file in this folder
 load_dotenv()
 
@@ -28,14 +28,14 @@ def fetch_papers(fmt):
     data = response.read().decode('utf-8')
     root = ET.fromstring(data)
     papers_list = []
-
+    # Iterate entries
     for entry in root.findall('{http://www.w3.org/2005/Atom}entry' ):
         title = entry.find('{http://www.w3.org/2005/Atom}title').text
         summary = entry.find('{http://www.w3.org/2005/Atom}summary').text
         paper_info = f"Title: {title} Summary: {summary}"
-
         papers_list.append(paper_info)
-    # Check if the list has some content
+        
+    # Check if the list has some content and save to either json or txt format
     if fmt == 'json':
         dic = {}
         dic['content'] = papers_list
@@ -58,8 +58,10 @@ def fetch_papers(fmt):
     return 
 
 if __name__ == "__main__":
+    # Fetch papers from the API
     fetch_papers(fmt)
     
+    # Load data from file
     if fmt == 'json':
         loader = JSONLoader(
             file_path="./data.json",
@@ -76,14 +78,15 @@ if __name__ == "__main__":
 
     vectorstore = Chroma.from_documents(documents=splits, embedding=OpenAIEmbeddings())
     retriever = vectorstore.as_retriever()
-
+    
+    # Potential alternative prompt, in case tweaks are necessary
     template = """Answer the question based only on the following context:
     {context}
 
      Question: {question}
      """
     #prompt = ChatPromptTemplate.from_template(template)
-    prompt = hub.pull("rlm/rag-prompt")
+    prompt = hub.pull("rlm/rag-prompt") # Using default RAG prompt
 
     llm = ChatOpenAI(model_name="gpt-3.5-turbo", temperature=0)
 
@@ -91,7 +94,7 @@ if __name__ == "__main__":
     def format_docs(docs):
         return "\n".join(doc.page_content for doc in docs)
 
-
+    # Create RAG chain
     rag_chain = (
         {"context": retriever, "question": RunnablePassthrough()}
         | prompt
@@ -99,6 +102,7 @@ if __name__ == "__main__":
         | StrOutputParser()
     )
     
+    # Prompt user for input, and break when the input is an empty string
     while True:
         val = input("Enter your prompt: ")
         if val == '':
