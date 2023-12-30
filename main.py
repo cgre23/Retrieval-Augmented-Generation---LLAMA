@@ -14,8 +14,8 @@ from langchain.prompts import PromptTemplate, ChatPromptTemplate
 from langchain.document_loaders import TextLoader, JSONLoader
 from pathlib import Path
 import json
-
-fmt='json'
+import logging
+fmt='json' # Choose 'txt' or 'json' format
 # Make sure that you place the OPENAI_API_KEY in the .env file in this folder
 load_dotenv()
 
@@ -32,28 +32,33 @@ def fetch_papers(fmt):
     for entry in root.findall('{http://www.w3.org/2005/Atom}entry' ):
         title = entry.find('{http://www.w3.org/2005/Atom}title').text
         summary = entry.find('{http://www.w3.org/2005/Atom}summary').text
-        paper_info = f"Title: {title}\n Summary: {summary}\n"
+        paper_info = f"Title: {title} Summary: {summary}"
 
         papers_list.append(paper_info)
     # Check if the list has some content
     if fmt == 'json':
         dic = {}
         dic['content'] = papers_list
-    
         if papers_list != []:
+            logging.info('Writing data to data.json')
             with open('data.json', 'w', encoding='utf-8') as f:
                 json.dump(dic, f)
+        else:
+            logging.info('Using existing data.json file')
                 
     if papers_list != [] and fmt == 'txt':
+        logging.info('Writing data to data.txt')
         file = open('data.txt','w')
         for item in papers_list:
             file.write(item)
         file.close()
+    else:
+        logging.info('Using existing data.txt file')
 
     return 
 
 if __name__ == "__main__":
-    fetch_papers('json')
+    fetch_papers(fmt)
     
     if fmt == 'json':
         loader = JSONLoader(
@@ -66,7 +71,7 @@ if __name__ == "__main__":
         docs = loader.load()
         
     # Split text and create vector embeddings
-    text_splitter = RecursiveCharacterTextSplitter(chunk_size=1000, chunk_overlap=100)
+    text_splitter = RecursiveCharacterTextSplitter(chunk_size=1500, chunk_overlap=200, separators=["\n\n", "\n", " ", ""])
     splits = text_splitter.split_documents(docs)
 
     vectorstore = Chroma.from_documents(documents=splits, embedding=OpenAIEmbeddings())
@@ -75,10 +80,10 @@ if __name__ == "__main__":
     template = """Answer the question based only on the following context:
     {context}
 
-    Question: {question}
-    """
-    prompt = ChatPromptTemplate.from_template(template)
-    #prompt = hub.pull("rlm/rag-prompt")
+     Question: {question}
+     """
+    #prompt = ChatPromptTemplate.from_template(template)
+    prompt = hub.pull("rlm/rag-prompt")
 
     llm = ChatOpenAI(model_name="gpt-3.5-turbo", temperature=0)
 
@@ -88,10 +93,15 @@ if __name__ == "__main__":
 
 
     rag_chain = (
-        {"context": retriever | format_docs, "question": RunnablePassthrough()}
+        {"context": retriever, "question": RunnablePassthrough()}
         | prompt
         | llm
         | StrOutputParser()
     )
     
-    print(rag_chain.invoke("Name at least 5 domain-specific LLMs that have been created by fine-tuning Llama-2."))
+    while True:
+        val = input("Enter your prompt: ")
+        if val == '':
+            break
+        print(rag_chain.invoke(val))
+        
