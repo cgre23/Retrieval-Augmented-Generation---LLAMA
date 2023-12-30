@@ -30,6 +30,17 @@ The aim is to gain a quick overview of the diverse possible uses of Llama-2. For
 3. Wait until the script asks for a prompt. Enter your prompt and you will get a response. You will be repeatedly asked for another prompt; to quit press Enter on an empty prompt.
 
 
+## Examples
+
+    Enter your prompt: What can you find out about the model structure of Llama-2?
+    Llama-2 is a collection of pretrained and fine-tuned large language models ranging from 7 billion to 70 billion parameters. The fine-tuned Llama-2 models, called Llama 2-Chat, are optimized for dialogue use cases and outperform open-source chat models on most benchmarks. The model structure of Llama-2 is described in detail in the provided context.
+
+    Enter your prompt: For which tasks has Llama-2 already been used successfully? What are promising areas of application for Llama-2?
+    Llama-2 has been successfully used for dialogue use cases, as the fine-tuned Llama 2-Chat models outperform open-source chat models on most benchmarks. Llama-2 has also been successfully used for multitask analysis of financial news, including tasks such as analyzing a text from financial market perspectives, highlighting main points, summarizing a text, and extracting named entities with sentiments. Promising areas of application for Llama-2 include language modeling in underrepresented languages like Tamil, where it has shown significant performance improvements in text generation.
+
+    Enter your prompt: Name at least 5 domain-specific LLMs that have been created by fine-tuning Llama-2.
+    Lawyer LLaMA, Llama 2-Chat, fine-tuned Llama 2 GPT model for financial news analysis, LLaMAntino family of Italian LLMs.
+
 ## Notes
 
 In case of problems with getting data from the API (for example: rate limits), the script will default to the files in this folder.
